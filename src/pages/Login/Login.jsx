@@ -1,17 +1,32 @@
 import "./Login.css";
 import assets from "../../assets/assets";
 import { useState } from "react";
+import { signup, login } from "../../config/firebase";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Sign Up");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const onSubmitHandler = (event) =>{
+    event.preventDefault()
+    if(currentState === "Sign Up"){
+      signup(username, email, password)
+    }else{
+      login(email, password)
+    }
+  }
 
   return (
     <div className="login">
       <img src={assets.logo_big} alt="" className="logo" />
-      <form className="login-form">
+      <form onSubmit={onSubmitHandler} className="login-form">
         <h2> {currentState} </h2>
         {currentState === "Sign Up" ? (
           <input
+            onChange={(e) => setUsername(e.target.value)}
+            value={username}
             type="text"
             placeholder="username"
             required
@@ -20,12 +35,16 @@ const Login = () => {
         ) : null}
 
         <input
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
           type="email"
           placeholder="email address"
           className="form-input"
           required
         />
         <input
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
           type="password"
           placeholder="password"
           required
@@ -48,7 +67,10 @@ const Login = () => {
           ) : (
             <p className="login-toggle">
               Create an account
-              <span onClick={() => setCurrentState("Sign Up")}> click here</span>
+              <span onClick={() => setCurrentState("Sign Up")}>
+                {" "}
+                click here
+              </span>
             </p>
           )}
         </div>
