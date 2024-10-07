@@ -43,7 +43,7 @@ const signup = async (username, email, password) => {
 
     // Firestore'a chat bilgilerini ekle
     await setDoc(doc(db, "chats", user.uid), {
-      chatData: [],
+      chatsData: [],
     });
 
     toast.success("Kullanıcı oluşturuldu!");

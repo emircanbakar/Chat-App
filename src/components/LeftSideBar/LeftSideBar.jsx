@@ -1,7 +1,38 @@
 import "./LeftSideBar.css";
 import assets from "../../assets/assets";
+import { useNavigate } from "react-router-dom";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../config/firebase";
+import { useContext, useState } from "react";
+import { AppContext } from "../../context/AppContext";
 
 const LeftSideBar = () => {
+  const navigate = useNavigate();
+  const { userData } = useContext(AppContext);
+  const [user, setUser] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+
+  const inputHandler = async (e) => {
+    try {
+      const input = e.target.value;
+      if (input) {
+        setShowSearch(true);
+        const userRef = collection(db, "users");
+        const q = query(userRef, where("username", "==", input.toLowerCase()));
+        const querySnap = await getDocs(q);
+        if (!querySnap.empty && querySnap.docs[0].data().id !== userData.id) {
+          setUser(querySnap.docs[0].data());
+        } else {
+          setUser(null);
+        }
+      } else {
+        setShowSearch(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="ls">
       <div className="ls-top">
@@ -10,29 +41,40 @@ const LeftSideBar = () => {
           <div className="menu">
             <img src={assets.menu_icon} alt="" />
             <div className="sub-menu">
-              <p>Edit profile</p>
-              <hr/>
+              <p onClick={() => navigate("/profile")}>Edit profile</p>
+              <hr />
               <p>Logout</p>
             </div>
           </div>
         </div>
         <div className="ls-search">
           <img src={assets.search_icon} alt="" />
-          <input type="text" placeholder="Search Here..." />
+          <input
+            onChange={inputHandler}
+            type="text"
+            placeholder="Search Here..."
+          />
         </div>
       </div>
       <div className="ls-list">
-        {Array(12)
-          .fill("")
-          .map((item, index) => (
-            <div className="friends" key={index}>
-              <img src={assets.profile_img} alt="" />
-              <div>
-                <p>Emircan Bakar</p>
-                <span>hello, whats up?</span>
+        {showSearch && user ? (
+          <div className="friends add-user">
+            <img src={user.avatar} alt="" />
+            <p> {user.name} </p>
+          </div>
+        ) : (
+          Array(12)
+            .fill("")
+            .map((item, index) => (
+              <div className="friends" key={index}>
+                <img src={assets.profile_img} alt="" />
+                <div>
+                  <p>Emircan Bakar</p>
+                  <span>hello, whats up?</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+        )}
       </div>
     </div>
   );
