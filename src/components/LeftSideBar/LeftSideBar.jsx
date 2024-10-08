@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 
 const LeftSideBar = () => {
   const navigate = useNavigate();
-  const { userData, chatData, chatUser, setChatUser, setMessagesId, messagesId } = useContext(AppContext);
+  const { userData, chatData,  setChatUser, setMessagesId, } = useContext(AppContext);
   const [user, setUser] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -128,7 +128,7 @@ const LeftSideBar = () => {
               <img src={item.userData.avatar} alt="" />
               <div>
                 <p>{item.userData.name}</p>
-                <span>{item.userData.lastMessage}</span>
+                <span>{item.lastMessage}</span>
               </div>
             </div>
           ))

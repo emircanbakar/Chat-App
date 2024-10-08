@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import "./ChatBox.css";
 import assets from "../../assets/assets";
 import { useContext, useEffect, useState } from "react";
@@ -24,7 +25,7 @@ const ChatBox = () => {
           messages: arrayUnion({
             sId: userData.id,
             text: input,
-            createAt: new Date(),
+            createdAt: new Date(),
           }),
         });
 
@@ -38,30 +39,39 @@ const ChatBox = () => {
               (c) => (c.messageId = messagesId)
             );
             userChatData.chatsData[chatIndex].lastMessage = input.slice(0, 30);
-            userChatData.chatsData[chatIndex].updatedAt = Date.now();
+            userChatData.chatsData[chatIndex].updateAt = Date.now();
             if (userChatData.chatsData[chatIndex].rId === userData.id) {
               userChatData.chatsData[chatIndex].messageSeen = false;
-            } else {
-              console.log("satır42 messageSeen de çalışmıyor");
             }
             await updateDoc(userChatsRef, {
               chatsData: userChatData.chatsData,
             });
-          }
+          } else console.log("snapshot.exist değil");
         });
-      } else {
-        console.log("messagesID ya da input alınamıyor");
-      }
+        console.log("mesaj başarıyla gönderildi");
+      } else console.log("input ya da messagesId alınamıyor");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error);
     }
+    setInput("");
   };
+
+  const convertTime = (time) =>{
+    let date = time.toDate();
+    const hour = date.getHours()
+    const minute = date.getMinutes()
+    if (hour> 12) {
+      return hour-12 + ":" + minute + "PM"
+    }else{
+      return hour + ":" + minute + "AM"
+    }
+  }
+
 
   useEffect(() => {
     if (messagesId) {
       const unSub = onSnapshot(doc(db, "messages", messagesId), (res) => {
         setMessages(res.data().messages.reverse());
-        console.log(res.data().messages.reverse());
       });
       return () => {
         unSub();
@@ -72,40 +82,36 @@ const ChatBox = () => {
   return chatUser ? (
     <div className="chat-box">
       <div className="chat-user">
-        <img src={chatUser.userData.avatar} alt="" />
+        <img src={chatUser.userData.avatar} />
         <p>
-          {chatUser.userData.name}{" "}
-          <img src={assets.green_dot} className="dot" alt="" />{" "}
+          {chatUser.userData.name}
+          <img src={assets.green_dot} className="dot" alt="" />
         </p>
         <img src={assets.help_icon} className="help" />
       </div>
 
       <div className="chat-msg">
-        <div className="s-msg">
-          <p className="msg">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, qui!
-          </p>
-          <div>
-            <img src={assets.profile_img} />
-            <p>2:34 AM</p>
-          </div>
-        </div>
-        <div className="s-msg">
-          <img className="msg-img" src={assets.pic1} alt="" />
-          <div>
-            <img src={assets.profile_img} />
-            <p>2:34 AM</p>
-          </div>
-        </div>
-        <div className="r-msg">
-          <p className="msg">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias, qui!
-          </p>
-          <div>
-            <img src={assets.profile_img} />
-            <p>2:34 AM</p>
-          </div>
-        </div>
+        {messages.map((msg, index) => {
+          return (
+            <div
+              key={index}
+              className={msg.sId === userData.id ? "s-msg" : "r-msg"}
+            >
+              <p className="msg">{msg.text}</p>
+              <div>
+                <img
+                  src={
+                    msg.sId === userData.id
+                      ? userData.avatar
+                      : chatUser.userData.avatar
+                  }
+                  alt="avatar"
+                />
+                <p> {convertTime(msg.createdAt)} </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="chat-input">
