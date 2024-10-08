@@ -10,11 +10,12 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import { toast } from "react-toastify";
 
 const ChatBox = () => {
   const { userData, messagesId, chatUser, messages, setMessages } =
     useContext(AppContext);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState();
 
   const sendMessage = async () => {
     try {
@@ -34,13 +35,26 @@ const ChatBox = () => {
           if (userChatsSnapshot.exists()) {
             const userChatData = userChatsSnapshot.data();
             const chatIndex = userChatData.chatsData.findIndex(
-              (c) => c.messageId === messagesId
+              (c) => (c.messageId = messagesId)
             );
-            userChatData.chatsData[chatIndex].lastMessage = input.slice(0,30);
+            userChatData.chatsData[chatIndex].lastMessage = input.slice(0, 30);
+            userChatData.chatsData[chatIndex].updatedAt = Date.now();
+            if (userChatData.chatsData[chatIndex].rId === userData.id) {
+              userChatData.chatsData[chatIndex].messageSeen = false;
+            } else {
+              console.log("satır42 messageSeen de çalışmıyor");
+            }
+            await updateDoc(userChatsRef, {
+              chatsData: userChatData.chatsData,
+            });
           }
         });
+      } else {
+        console.log("messagesID ya da input alınamıyor");
       }
-    } catch (error) {}
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
@@ -105,7 +119,7 @@ const ChatBox = () => {
         <label htmlFor="image">
           <img src={assets.gallery_icon} alt="" />
         </label>
-        <img src={assets.send_button} alt="" />
+        <img onClick={sendMessage} src={assets.send_button} alt="" />
       </div>
     </div>
   ) : (
