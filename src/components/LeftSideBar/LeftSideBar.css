@@ -123,3 +123,17 @@
 .menu:hover .sub-menu{
   display: block;
 }
+
+.friends.border img{
+  border: 3px solid #002670;
+}
+
+.friends.border div span{
+  color: #5cf7ff;
+}
+
+@media (max-width:900px) {
+  .ls{
+    width: 100%;
+  }
+}

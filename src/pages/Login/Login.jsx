@@ -1,7 +1,7 @@
 import "./Login.css";
 import assets from "../../assets/assets";
 import { useState } from "react";
-import { signup, login } from "../../config/firebase";
+import { signup, login, resetPass } from "../../config/firebase";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Sign Up");
@@ -9,14 +9,14 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const onSubmitHandler = (event) =>{
-    event.preventDefault()
-    if(currentState === "Sign Up"){
-      signup(username, email, password)
-    }else{
-      login(email, password)
+  const onSubmitHandler = (event) => {
+    event.preventDefault();
+    if (currentState === "Sign Up") {
+      signup(username, email, password);
+    } else {
+      login(email, password);
     }
-  }
+  };
 
   return (
     <div className="login">
@@ -67,12 +67,17 @@ const Login = () => {
           ) : (
             <p className="login-toggle">
               Create an account
-              <span onClick={() => setCurrentState("Sign Up")}>
-                {" "}
-                click here
-              </span>
+              <span onClick={() => setCurrentState("Sign Up")}>click here</span>
             </p>
           )}
+          {currentState === "Login" ? (
+            <p className="login-toggle">
+              Forgot password
+              <span onClick={() => resetPass(email)}>
+                reset password
+              </span>
+            </p>
+          ) : null}
         </div>
       </form>
     </div>

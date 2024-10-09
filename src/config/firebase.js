@@ -3,10 +3,19 @@ import { initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { getFirestore, setDoc, doc } from "firebase/firestore";
+import {
+  getFirestore,
+  setDoc,
+  doc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { toast } from "react-toastify";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -63,13 +72,33 @@ const login = async (email, password) => {
 };
 
 const logout = async () => {
-    try {
-        await signOut(auth)
-        toast.success("Çıkış yapıldı!");
-    } catch (error) {
-        console.error("Hata oluştu: ", error);
-        toast.error(error.code.split("/")[1].split("-").join(" "));
-    }
-}
+  try {
+    await signOut(auth);
+    toast.success("Çıkış yapıldı!");
+  } catch (error) {
+    console.error("Hata oluştu: ", error);
+    toast.error(error.code.split("/")[1].split("-").join(" "));
+  }
+};
 
-export { signup, login, logout, auth, db };
+const resetPass = async (email) => {
+  if (!email) {
+    toast.error("Enter your email");
+    return null;
+  }
+  try {
+    const userRef = collection(db, "users");
+    const q = query(userRef, where("email", "==", email));
+    const querySnap = await getDocs(q);
+    if (!querySnap.empty) {
+      await sendPasswordResetEmail(auth, email);
+      toast.success("reset email sent");
+    } else {
+      toast.error("no user for this email");
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(error.message);
+  }
+};
+export { signup, login, logout, auth, db, resetPass };

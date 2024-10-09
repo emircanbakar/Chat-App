@@ -12,9 +12,9 @@ import {
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { toast } from "react-toastify";
-
+import upload from "../../lib/upload.js";
 const ChatBox = () => {
-  const { userData, messagesId, chatUser, messages, setMessages } =
+  const { userData, messagesId, chatUser, messages, setMessages, chatVis, setChatVis } =
     useContext(AppContext);
   const [input, setInput] = useState();
 
@@ -56,17 +56,54 @@ const ChatBox = () => {
     setInput("");
   };
 
-  const convertTime = (time) =>{
-    let date = time.toDate();
-    const hour = date.getHours()
-    const minute = date.getMinutes()
-    if (hour> 12) {
-      return hour-12 + ":" + minute + "PM"
-    }else{
-      return hour + ":" + minute + "AM"
-    }
-  }
+  const sendImage = async (e) => {
+    try {
+      const fileUrl = await upload(e.target.files[0]);
+      if (fileUrl && messagesId) {
+        await updateDoc(doc(db, "messages", messagesId), {
+          messages: arrayUnion({
+            sId: userData.id,
+            img: fileUrl,
+            createdAt: new Date(),
+          }),
+        });
 
+        const userIDs = [chatUser.rId, userData.id];
+        userIDs.forEach(async (id) => {
+          const userChatsRef = doc(db, "chats", id);
+          const userChatsSnapshot = await getDoc(userChatsRef);
+          if (userChatsSnapshot.exists()) {
+            const userChatData = userChatsSnapshot.data();
+            const chatIndex = userChatData.chatsData.findIndex(
+              (c) => (c.messageId = messagesId)
+            );
+            userChatData.chatsData[chatIndex].lastMessage = "Image";
+            userChatData.chatsData[chatIndex].updateAt = Date.now();
+            if (userChatData.chatsData[chatIndex].rId === userData.id) {
+              userChatData.chatsData[chatIndex].messageSeen = false;
+            }
+            await updateDoc(userChatsRef, {
+              chatsData: userChatData.chatsData,
+            });
+          } else console.log("snapshot.exist değil 4 img");
+        });
+      }
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+  };
+
+  const convertTime = (time) => {
+    let date = time.toDate();
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    if (hour > 12) {
+      return hour - 12 + ":" + minute + "PM";
+    } else {
+      return hour + ":" + minute + "AM";
+    }
+  };
 
   useEffect(() => {
     if (messagesId) {
@@ -80,14 +117,15 @@ const ChatBox = () => {
   }, [messagesId]);
 
   return chatUser ? (
-    <div className="chat-box">
+    <div className={`chat-box ${chatVis? "" : "hidden"}`} >
       <div className="chat-user">
         <img src={chatUser.userData.avatar} />
         <p>
           {chatUser.userData.name}
-          <img src={assets.green_dot} className="dot" alt="" />
+          {Date.now()-chatUser.userData.lastSeen <= 70000?  <img src={assets.green_dot} className="dot"/> : null}
         </p>
         <img src={assets.help_icon} className="help" />
+        <img onClick={() => setChatVis(false)} src={assets.arrow_icon} className="arrow"/>
       </div>
 
       <div className="chat-msg">
@@ -97,7 +135,12 @@ const ChatBox = () => {
               key={index}
               className={msg.sId === userData.id ? "s-msg" : "r-msg"}
             >
-              <p className="msg">{msg.text}</p>
+              {msg["img"] ? (
+                <img src={msg.img} className="msg-img" />
+              ) : (
+                <p className="msg">{msg.text}</p>
+              )}
+
               <div>
                 <img
                   src={
@@ -121,7 +164,13 @@ const ChatBox = () => {
           type="text"
           placeholder="Send a message!"
         />
-        <input type="file" id="image" accept="image/png, image/jpeg" hidden />
+        <input
+          onChange={sendImage}
+          type="file"
+          id="image"
+          accept="image/png, image/jpeg"
+          hidden
+        />
         <label htmlFor="image">
           <img src={assets.gallery_icon} alt="" />
         </label>
@@ -129,7 +178,7 @@ const ChatBox = () => {
       </div>
     </div>
   ) : (
-    <div className="chat-welcome">
+    <div className={`chat-welcome ${chatVis? "" : "hidden" }`} >
       <img src={assets.logo_icon} alt="" />
       <p>Chat and chill...</p>
     </div>
