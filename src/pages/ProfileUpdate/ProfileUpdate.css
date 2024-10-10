@@ -1,7 +1,6 @@
 .profile {
   min-height: 100vh;
-  background: url(/background.png) no-repeat;
-  background-size: cover;
+  background-color: #1d1d1d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +33,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: gray;
+  color: #1d1d1d;
   cursor: pointer;
 }
 
@@ -49,13 +48,13 @@ textarea {
     padding: 10px;
     min-width: 300px;
     border: 1px solid #c9c9c9;
-    outline-color: #077EFF;
+    outline-color: #1d1d1d;
 }
 
 .profile form button{
     border: none;
     color: white;
-    background-color: #077EFF;
+    background-color: #1d1d1d;
     padding: 8px;
     font-size: 1rem;
     cursor: pointer;

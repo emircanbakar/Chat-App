@@ -1,7 +1,6 @@
 .login{
     min-height: 100vh;
-    background: url(/background.png) no-repeat;
-    background-size: cover;
+    background-color: #1d1d1d;
     display: flex;
     align-items: center;
     justify-content: space-evenly;
@@ -28,12 +27,12 @@
     padding: 8px 10px;
     border: 1px solid #c9c9c9;
     border-radius: 4px;
-    outline-color: black;
+    outline-color: #1d1d1d;
 }
 
 .login-form button{
     padding: 10px;
-    background-color: black;
+    background-color: #1d1d1d;
     color: white;
     font-size: 1rem;
     border: none;
@@ -60,7 +59,7 @@
 }
 
 .login-toggle span{
-    color: blue;
+    color: #F97300;
     cursor: pointer;
 }
 
